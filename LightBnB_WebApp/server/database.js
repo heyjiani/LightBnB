@@ -97,7 +97,7 @@ exports.getAllReservations = getAllReservations;
  */
 const getAllProperties = function(options, limit = 10) {
   const queryParams = [];
-  const { city, owner_id, minPerNight: minimum_price_per_night, maxPerNight: maximum_price_per_night, rating: minimum_rating } = options;
+  const { city, owner_id, minimum_price_per_night, maximum_price_per_night, minimum_rating } = options;
 
   let queryString = `
     SELECT properties.*, AVG(rating) AS average_rating
@@ -105,33 +105,33 @@ const getAllProperties = function(options, limit = 10) {
     JOIN property_reviews ON property_id = properties.id
   `;
 
-  if (options.city) {
-    queryParams.push(`%${options.city}%`);
+  if (city) {
+    queryParams.push(`%${city}%`);
     queryString += `WHERE city LIKE $${queryParams.length} `;
   }
 
-  if (options.owner_id) {
-    queryParams.push(`${options.owner_id}`);
-    queryString += options.city ? `AND ` : `WHERE `;
+  if (owner_id) {
+    queryParams.push(`${owner_id}`);
+    queryString += city ? `AND ` : `WHERE `;
     queryString += `owner_id = $${queryParams.length} `;
   }
 
-  if (options.minimum_price_per_night) {
-    queryParams.push(options.minimum_price_per_night * 100);
-    queryString += options.city || options.owner_id ? `AND ` : `WHERE `;
+  if (minimum_price_per_night) {
+    queryParams.push(minimum_price_per_night * 100);
+    queryString += city || owner_id ? `AND ` : `WHERE `;
     queryString += `cost_per_night >= $${queryParams.length} ` ;
   }
 
-  if (options.maximum_price_per_night) {
-    queryParams.push(options.maximum_price_per_night * 100);
-    queryString += options.city || options.owner_id || options.minimum_price_per_night ? `AND ` : `WHERE `;
+  if (maximum_price_per_night) {
+    queryParams.push(maximum_price_per_night * 100);
+    queryString += city || owner_id || minimum_price_per_night ? `AND ` : `WHERE `;
     queryString += `cost_per_night <= $${queryParams.length} ` ;
   }
 
   queryString += ` GROUP BY properties.id `;
 
-  if (options.minimum_rating) {
-    queryParams.push(`${options.minimum_rating}`);
+  if (minimum_rating) {
+    queryParams.push(`${minimum_rating}`);
     queryString += `HAVING AVG(rating) >= $${queryParams.length}` ;
   }
 
