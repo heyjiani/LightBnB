@@ -140,7 +140,7 @@ const getAllProperties = function(options, limit = 10) {
     ORDER BY cost_per_night
     LIMIT $${queryParams.length};
   `;
-  console.log(queryString, queryParams);
+  // console.log(queryString, queryParams);
 
   return pool
     .query(queryString, queryParams)
@@ -159,9 +159,21 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+
+  const queryColumns = Object.keys(property).join(', ');
+  const queryParams = Object.values(property);
+
+  const queryString = `
+    INSERT INTO properties (${queryColumns})
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+    RETURNING *
+    `
+  return pool
+    .query(queryString, queryParams)
+    .then((result) => result.rows[0])
+    .catch((err) => {
+      console.log(err.message);
+      return null;
+    });
 }
 exports.addProperty = addProperty;
